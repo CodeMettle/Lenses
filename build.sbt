@@ -1,14 +1,14 @@
 import ReleaseTransformations._
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.7"
 
-crossScalaVersions := Seq("2.11.8", "2.10.6", "2.12.0")
+crossScalaVersions := Seq("2.11.7", "2.10.5")
 
 organization in ThisBuild := "com.trueaccord.lenses"
 
 scalacOptions in ThisBuild ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, v)) if v <= 11 => List("-target:jvm-1.7")
+    case Some((2, v)) if v <= 11 => List("-target:jvm-1.6")
     case _ => Nil
   }
 }
@@ -42,7 +42,18 @@ lazy val root = project.in(file("."))
 
 lazy val lenses = crossProject.in(file("."))
   .settings(
-    name := "lenses"
+    name := "lenses",
+    publishMavenStyle := true,
+    credentials += {
+      def file = "credentials-" + (if (isSnapshot.value) "snapshots" else "internal")
+
+      Credentials(Path.userHome / ".m2" / file)
+    },
+    publishTo := {
+      def path = "/repository/" + (if (isSnapshot.value) "snapshots" else "internal")
+
+      Some("CodeMettle Maven" at s"http://maven.codemettle.com$path")
+    }
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
